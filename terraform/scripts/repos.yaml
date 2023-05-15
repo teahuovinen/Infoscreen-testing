@@ -1,0 +1,15 @@
+repos:
+- id: /.*/
+  allowed_overrides: [plan_requirements, apply_requirements, workflow, delete_source_branch_on_merge, repo_locking]
+  workflow: staging
+
+# Define your custom workflows.
+workflows:
+  staging:
+    plan:
+      steps:
+      - run: rm -rf .terraform
+      - init:
+          extra_args: [-backend-config=stage.backend.tfvars]
+      - plan:
+          extra_args: [-var-file=terraform.tfvars]

@@ -1,0 +1,11 @@
+.release {
+    display: none;
+  }
+
+.newsone {
+    display: none;
+  }
+
+#clock {
+    font-size: 300%;
+}

@@ -1,0 +1,28 @@
+services:
+  webapp:
+    container_name: webapp
+    build:
+      context: .
+      args:
+        - NODE_ENV=local
+      dockerfile: Dockerfile-test
+    # build: ./
+    # command: >
+    #   sh -c "/opt/venv/bin/python manage.py createsuperuser --no-input --username Tea --email no@ema.il" && \
+    #   sh -c "/opt/venv/bin/python manage.py migrate --no-input"
+    ports:
+      - 80:80
+    env_file:
+      - ./.env.dev.local
+    depends_on:
+          - db
+  db:
+    image: postgres:15.2
+    container_name: db
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.dev.local.db
+
+# volumes:
+#   postgres_data:

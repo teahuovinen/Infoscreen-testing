@@ -1,0 +1,7 @@
+robotframework
+robotframework-doctestlibrary
+robotframework-seleniumlibrary
+robotframework-requests
+requests 
+rpaframework
+rpaframework-recognition

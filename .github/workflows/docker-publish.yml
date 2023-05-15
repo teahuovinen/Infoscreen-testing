@@ -1,0 +1,257 @@
+name: Docker-build-test-and-deploy
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+    tags: 'v*.*.*'
+
+env:
+  REGISTRY: ${{ vars.REGISTRY }}
+  TEST_TAG: ${{ vars.REGISTRY }}/infoscreen:test
+  IMAGE_NAME: infoscreen
+  LATEST_TAG: latest
+
+
+jobs:
+  Build_and_Test:
+
+    runs-on: ubuntu-latest
+#     runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      
+      - name: Install Robot Framework requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r robot-requirements.txt
+
+      # Login against a Azure ACR except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Get latest tag
+        id: latest-tag
+        run:
+          echo "LATEST_TAG=$(echo ${{ steps.meta.outputs.tags }} | head -n1)" >> $GITHUB_ENV
+
+
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          load: true
+          # tags: infoscreen:test
+          tags: ${{ env.TEST_TAG }}
+
+      # Create .env files for testing environment
+      - name: Create .env files for testing
+        run: |
+            echo "${{ secrets.TEST_ENV_FILE }}" > .env.dev.local
+            echo "${{ secrets.TESTDB_ENV_FILE }}" > .env.dev.local.db
+            
+      # Build testing environment
+      - name: Build testing environment with Docker compose
+        run: |
+          docker compose up -d --build
+          
+      # Sleep for 5 seconds to give Django Webapp time to start
+      - name: Sleep for 5 seconds
+        run: sleep 5s
+        shell: bash
+
+      # Run Django unittest
+      - name: Run Django unittest 
+        run: |
+          docker exec webapp /opt/venv/bin/python manage.py test
+
+
+
+      # Run Robot Framework test if Django unittest are successfull
+      - name: Robot Framework test
+        if: success()
+        continue-on-error: true
+        run: |
+          cd tests
+          export TEST_IP=${{ secrets.TEST_IP }}
+          export DJANGO_SUPERUSER_NAME=${{ secrets.DJANGO_SUPERUSER_NAME }}
+          export DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+          export OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
+          chmod +x run.sh
+          ./run.sh
+
+      # Print Docker compose logs if Robot Framework fails
+      - name: Print Docker compose logs for debugging
+        if: failure()
+        run: |
+          docker compose logs
+
+      # Store test report as an artifact
+      - name: Store test report
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Robot logs
+          path: /home/runner/work/infoscreen/infoscreen/tests/logs/Infoscreen_logs/
+      
+      - name: Store test screenshots
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test screenshots
+          path: /home/runner/work/infoscreen/infoscreen/tests/logs/*/selenium-screenshot-*.png
+            
+        # TRIVY SCAN DISABLED (UNRELIABLE)
+      # - name: Run Trivy vulnerability scanner
+      #   if: success() || failure()
+      #   continue-on-error: true
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: '${{ env.TEST_TAG }}'
+      #     format: 'table'
+      #     # template: '@/contrib/gitlab.tpl'
+      #     output: 'scan.txt'
+      #     exit-code: '1'
+      #     # ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'CRITICAL,HIGH,MEDIUM'
+
+
+      # - name: Upload scan artifact
+      #   if: success() || failure() 
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: trivy-scan
+      #     path: scan.txt
+
+
+      # Build and push Docker image with Buildx
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # cache-from: type=local,src=/tmp/.buildx-cache
+          # cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+
+  Deploy:
+    needs: Build_and_Test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+#     runs-on: self-hosted
+
+    steps:
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Get latest tag
+        id: latest-tag
+        run:
+          echo "LATEST_TAG=$(echo ${{ steps.meta.outputs.tags }} | head -n1)" >> $GITHUB_ENV
+
+      # Create SSH key and give permissions
+      - name: Create SSH key and give permissions
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > ssh_key.pem
+          chmod 400 ssh_key.pem
+
+      # Create and upload script file to Azure VM
+      - name: Create and upload script file to Azure VM
+        run: |
+          echo "${{ vars.DOCKER_SCRIPT }}" > docker_script.sh
+          chmod +x docker_script.sh
+          scp -i ssh_key.pem -o "StrictHostKeyChecking no" docker_script.sh ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:~
+
+          
+      # SSH to Azure VM and update VM
+      - name: Connect to Azure VM and update Docker container
+        run: |
+          ssh -i ssh_key.pem -o "StrictHostKeyChecking no" ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << EOF
+          
+          echo "${{ secrets.DEV_ENV_FILE }}" > .env.dev
+
+          sudo az login --service-principal \
+            -u ${{ secrets.AZURE_VM_APP_ID }} \
+            -p ${{ secrets.AZURE_VM_SERVICE_PRINCIPAL_SECRET }} \
+            --tenant ${{ secrets.AZURE_VM_TENANT_ID }}
+
+          sudo az acr login --name sinfoscreen --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }}
+
+          sleep 2s
+
+          sudo apt install dos2unix -y
+
+          sleep 2s
+
+          dos2unix docker_script.sh
+          chmod +x docker_script.sh
+          ./docker_script.sh
+
+          echo "Starting new webapp container"
+          sudo docker run -d \
+            -p 80:80 \
+            --name webapp \
+            --network=dbnetwork \
+            --env-file .env.dev \
+            ${{ env.LATEST_TAG }}
+
+          sleep 2s
+
+          sudo docker image prune -af
+          
+          sleep 2s
+          
+          sudo docker image ls
+          EOF
+
+

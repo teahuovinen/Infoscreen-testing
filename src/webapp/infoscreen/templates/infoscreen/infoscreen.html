@@ -1,0 +1,216 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Infoscreen - {{ office }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'infoscreen/style.css' %}">
+
+    <script>
+        setInterval(function() {
+          location.reload();
+        }, 300000); // refresh every 5 minutes (in milliseconds)
+    </script>
+
+  </head>
+  <body>  
+    <div id="maincontainer" class="container-fluid">
+        <div id="mainrow" class="row" style="height: 1080px; width: 1920px">
+            <div id="topleft" class="col-9 d-flex flex-column overflow: hidden;" style="height: 75%; background-color: lightblue">            
+                <div id="releasecarousel" class="carousel slide carousel-fade" data-ride="carousel">
+                    <div id="releasecarouselinner" class="carousel-inner">
+                        {% if releases %}
+                            {% for release in releases %}
+                                <div id="releasecarouselitem" class="carousel-item {% if forloop.first %} active {% endif %}" data-bs-interval="{{ release.release_duration_on_screen }}">                                
+                                    <div id="releasebox" class="d-flex flex-column justify-content-center align-items-center" style="overflow: hidden; height: 810px; width: 1440px;">
+                                        {% if release.release_body %}
+                                            {% if release.release_file %}                                       
+                                                <div id="releasetitle" class="d-flex" style="overflow: hidden; height: 20%; max-width: 95%;">
+                                                    <h1 id="releasetitletext" class="display-3 text-center" style="color: rgb(0, 0, 0)">
+                                                        {{ release.release_title }}
+                                                    </h1>
+                                                </div>
+                                                <div id="releasebody" class="d-flex" style="overflow: hidden; height: 30%; max-width: 95%;">
+                                                    <h3 id="releasebodytext" class="text-center" style="color: rgb(0, 0, 0)">
+                                                        {{ release.release_body|linebreaksbr|safe }}
+                                                    </h3>
+                                                </div>
+                                                <div id="releasefile" class="col-9 d-flex" style="overflow: hidden; height: 50%; max-width: 95%;">                                           
+                                                    <img id="releaseimage" src="{{ release.release_file }}" alt="Release image" class="img-fluid mx-auto">               
+                                                </div>
+                                            {% else %}
+                                                <div id="releasetitle" class="d-flex" style="overflow: hidden; height: 20%; max-width: 95%;">
+                                                    <h1 id="releasetitletext" class="display-3 text-center" style="color: rgb(0, 0, 0)">
+                                                        {{ release.release_title }}
+                                                    </h1>
+                                                </div>
+                                                <div id="releasebody" class="d-flex" style="overflow: hidden; height: 80%; max-width: 95%;">
+                                                    <h3 id="releasebodytext" class="text-center" style="color: rgb(0, 0, 0)">
+                                                        {{ release.release_body|linebreaksbr|safe }}
+                                                    </h3>
+                                                </div>                                                
+                                            {% endif %}
+                                        {% else %}
+                                            {% if release.release_file %}
+                                            <div id="releasefile" class="d-flex" style="overflow: hidden; max-height: 100%; max-width: 100%;">                                           
+                                                <img id="releaseimage" src="{{ release.release_file }}" alt="Release image" class="img-fluid mx-auto">               
+                                            </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <h1 id="nonews" class="display-3 text-center" style="color: rgb(0, 0, 0)">
+                            <br>
+                            No releases available.
+                            </h1>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div id="topright" class="col-3 d-flex flex-column justify-content-center" style="height: 75%; background-color: #e3ef59;">
+                <div id="officetitle" class="d-flex align-items-top justify-content-center">
+                    <h1 class="display-1">{{ office }}</h1>
+                </div>
+                <br>
+                    <h1 class="d-flex align-items-top justify-content-center">WEATHER</h1>
+                    <h2>NOW</h2>
+                <div id="weatherbox_now" class="d-flex flex-row">
+                    <div class="d-flex"><img src="{% static 'infoscreen/weather/' %}{{ weather.0.1 }}.png" class="img-fluid"></img></div>
+                    <div class="d-flex flex-column">
+                        <h3>Temperature</h3>
+                        <h3>Feels like</h3>
+                        <h3>Chance of rain&nbsp;&nbsp;</h3>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <h3>{{ weather.0.0 }} °C</h3>
+                        <h3>{{ weather.0.2 }} °C</h3>
+                        <h3>{{ weather.0.3 }} %</h3>
+                    </div>                                              
+                </div>
+                <br>
+                <h2>TOMORROW</h2>
+                <div id="weatherbox_tomorrow" class="d-flex flex-row">
+                    <div class="d-flex"><img src="{% static 'infoscreen/weather/' %}{{ weather.1.1 }}.png" class="img-fluid"></img></div>
+                    <div class="d-flex flex-column">
+                        <h3>Temperature</h3>
+                        <h3>Feels like</h3>
+                        <h3>Chance of rain&nbsp;&nbsp;</h3>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <h3>{{ weather.1.0 }} °C</h3>
+                        <h3>{{ weather.1.2 }} °C</h3>
+                        <h3>{{ weather.1.3 }} %</h3>
+                    </div>                                         
+                </div>
+                <br>
+                <h2>DAY AFTER TOMORROW</h2>
+                <div id="weatherbox_day_after_tomorrow" class="d-flex flex-row">
+                    <div class="d-flex"><img src="{% static 'infoscreen/weather/' %}{{ weather.2.1 }}.png" class="img-fluid"></img></div>
+                    <div class="d-flex flex-column">
+                        <h3>Temperature</h3>
+                        <h3>Feels like</h3>
+                        <h3>Chance of rain&nbsp;&nbsp;</h3>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <h3>{{ weather.2.0 }} °C</h3>
+                        <h3>{{ weather.2.2 }} °C</h3>
+                        <h3>{{ weather.2.3 }} %</h3>
+                    </div>                                        
+                </div>                            
+            </div>
+
+            <div id="downleft" class="col-9 d-flex flex-row align-items-center justify-content-center" style="height: 25%; background-color: rgb(0, 0, 0); display: flex; flex-direction: row;">
+                <div id="ylelogobox" class="col-1 d-flex justify-content-center align-items-center" style="flex: 2;">
+                    <img id="ylelogoimage" src="{% static 'infoscreen/Yle-logo_RGB_turkoosi.png' %}" alt="YLE logo" class="img-fluid" style="max-height: 100%; max-width: 100%;">
+                </div>
+                <div id="news" class="d-flex justify-content-start align-items-start" style="flex: 7;">
+                    {% if news.news != False %}
+                        {% for headline, body in news %}
+                        <div class="newsone">
+                            <h3 id="newstitle" class="align-self-center" style="color: rgb(0, 255, 0); font-family: Terminal; font-size: 220%;">{{ headline }}</h3>
+                            <h5 id="newsbody" class="align-self-center" style="color: rgb(255, 255, 255); font-family: Terminal; font-size: 190%">{{ body }}</h5>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <h2 id="nonews" class="align-self-center" style="color: rgb(0, 255, 0); font-family: Terminal; font-size: 220%;">No news available.</h2>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="downright" class="col-3 d-flex flex-column justify-content-center" style="height: 25%; background-color: #e3ef59;">
+
+                <div id="clock" class="d-flex align-items-center justify-content-center" style="color: rgb(0, 0, 0); display: none;"></div>  
+
+                <div id="clock-placeholder">
+                    <p class="placeholder-glow" style="font-size: 300%">
+                        <span class="placeholder col-12 bg-dark"></span>
+                    </p>
+                </div>     
+                <div id="companylogobox" class="d-flex justify-content-center align-items-center" style="flex: 2;">
+                    <img id="companylogoimage" src="{% static 'infoscreen/company_logo.png' %}"  alt="company logo" class="img-fluid" style="max-height: 100%; max-width: 100%;">
+                </div>                     
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+
+        const releaseCarouselElement = document.querySelector('#releasecarousel');
+        const carousel = new bootstrap.Carousel(releaseCarouselElement, {
+                ride: "carousel",
+                touch: false,
+                pause: false
+        });
+
+
+        $(document).ready(function() {
+            var news = $('.newsone');
+            var currentNewsIndex = 0;
+            news.eq(currentNewsIndex).show(); // show the first news
+
+            function showNextNews() {
+                news.eq(currentNewsIndex).hide();
+                currentNewsIndex = (currentNewsIndex + 1) % news.length;
+                news.eq(currentNewsIndex).show();
+                setTimeout(showNextNews, 60000); // Cycle news in 1 minute period
+            }
+            showNextNews();
+        });
+        
+        
+        $(document).ready(function() {
+            setInterval(function() {
+                var now = new Date();
+                var locale = 'fi';
+                var options = { timeZone: 'Europe/Helsinki' };
+                var day = now.getDate();
+                var month = now.getMonth() + 1;
+                var hours = now.getHours();
+                var minutes = now.getMinutes();
+                var seconds = now.getSeconds();
+                // if (day < 10) day = "0" + day;
+                // if (month < 10) month = "0" + month;
+                if (hours < 10) hours = "0" + hours;
+                if (minutes < 10) minutes = "0" + minutes;
+                if (seconds < 10) seconds = "0" + seconds;
+                var time = day + "." + month + "." + now.getFullYear() + " " + hours + ":" + minutes + ":" + seconds;
+                $('#clock').html(time);
+            }, 1000);
+        });
+
+        setTimeout(function() {
+            $("#clock-placeholder").hide();
+            $("#clock").show();
+            }, 1000);
+
+    </script>
+  </body>
+</html>

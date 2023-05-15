@@ -1,0 +1,77 @@
+name: Azure self-hosted
+
+on:
+  schedule:
+  - cron: "0/10 * * * *"
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ${{ vars.REGISTRY }}
+  TEST_TAG: ${{ vars.REGISTRY }}/infoscreen:test
+  IMAGE_NAME: infoscreen
+  LATEST_TAG: latest
+
+jobs:
+  Build_and_Test:
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      
+      - name: Install Robot Framework requirements
+        run: |
+          sudo apt upgrade python3 -y
+          sudo apt upgrade python3-pip -y
+          sudo pip3 install -r robot-requirements.txt
+
+      # Create .env files for testing environment
+      - name: Create .env files for testing
+        run: |
+            echo "${{ secrets.TEST_ENV_FILE }}" > .env.dev.local
+            echo "${{ secrets.TESTDB_ENV_FILE }}" > .env.dev.local.db
+            
+      # Build testing environment
+      - name: Build testing environment with Docker compose
+        run: |
+          sudo docker compose up -d --build
+          
+      # Sleep for 5 seconds to give Django Webapp time to start
+      - name: Sleep for 5 seconds
+        run: sleep 5s
+        shell: bash
+
+      # Run Robot Framework test 
+      - name: Robot Framework test
+        if: success()
+        run: |
+          cd tests
+          export TEST_IP=${{ secrets.TEST_IP }}
+          export DJANGO_SUPERUSER_NAME=${{ secrets.DJANGO_SUPERUSER_NAME }}
+          export DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+          export OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
+          chmod +x run.sh
+          ./run.sh
+
+      # Store test report and screenshots as artifacts
+      - name: Store test report
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Robot logs
+          path: /home/runner/work/infoscreen/infoscreen/tests/logs/Infoscreen_logs/
+      
+      - name: Store test screenshots
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test screenshots
+          path: /home/runner/work/infoscreen/infoscreen/tests/logs/*/selenium-screenshot-*.png
+            
+
+
+
+

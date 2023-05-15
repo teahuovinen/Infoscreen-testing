@@ -1,0 +1,125 @@
+## Python related
+
+# Venv
+.venv*
+
+# Pycache
+*__pycache__
+
+# VSCode
+.vscode
+# CheckOV downloaded modules
+.external_modules/
+
+# .env
+.env*
+
+# VSCode
+.vscode
+
+# .pem, no keys!
+*.pem
+
+# Django 
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+
+#excalidraw
+*.excalidraw
+
+# Backup files # 
+*.bak 
+
+# .env
+.env*
+
+
+## Terraform related
+
+# azure.conf
+*azure.conf
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which are likely to contain sensitive data, such as
+# password, private keys, and other secrets. These should not be part of version 
+# control as they are data points which are potentially sensitive and subject 
+# to change depending on the environment.
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+# example: *tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+
+
+## Windows related
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+## Testing
+log.html
+report.html
+playwright-log.txt
+output.xml
+venv/
+geckodriver-*.log
+selenium-screenshot-*.png
+*-selenium-screenshot-*.png
+selenium-element-screenshot-*.png
+secrets.py
+logs/
+oulu_image.png
+.pabotsuitenames
+pabot_results/
+screenshots/

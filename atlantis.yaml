@@ -1,0 +1,32 @@
+version: 3
+automerge: false
+delete_source_branch_on_merge: false
+parallel_plan: true
+parallel_apply: true
+projects:
+- name: infoscreen-stage
+  branch: /atlantis/
+  dir: terraform/environments/stage/
+  # workspace: default
+  # terraform_version: v0.11.0
+  delete_source_branch_on_merge: false
+  repo_locking: true
+  autoplan:
+    when_modified: ["*.tf", "../modules/**/*.tf"]
+    enabled: true
+  plan_requirements: [mergeable, undiverged]
+  apply_requirements: [mergeable, undiverged]
+  # import_requirements: [mergeable, approved, undiverged]
+  workflow: staging
+# workflows:
+#   teststaging:
+#     plan:
+#       steps:
+#       - run: rm -rf .terraform
+#       - init:
+#           extra_args: [-backend-config=stage.backend.tfvars]
+#       - plan:
+#           extra_args: [-var-file=terraform.tfvars]
+# allowed_regexp_prefixes:
+# - dev/
+# - staging/
