@@ -1,9 +1,9 @@
 name: Azure self-hosted
 
 on:
-  schedule:
-  - cron: "0/10 * * * *"
-    branches: [ "main" ]
+#  schedule:
+#  - cron: "0/10 * * * *"
+#    branches: [ "main" ]
 
 env:
   REGISTRY: ${{ vars.REGISTRY }}
