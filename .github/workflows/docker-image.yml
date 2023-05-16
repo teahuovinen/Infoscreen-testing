@@ -2,10 +2,10 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "testing" ]
-  schedule:
-  - cron: "0 2 * * *"
-    branches: [ "testing" ]
+    branches: [ "master" ]
+ # schedule:
+ # - cron: "0 2 * * *"
+ #   branches: [ "master" ]
 
 env:
   REGISTRY: ${{ vars.REGISTRY }}
