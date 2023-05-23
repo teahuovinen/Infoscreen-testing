@@ -3,13 +3,11 @@ name: Docker Image CI
 on:
   push:
     branches: [ "master" ]
- # schedule:
- # - cron: "0 2 * * *"
- #   branches: [ "master" ]
+  # schedule:
+  # - cron: "* * * * *"
+  #   branches: [ "master" ]
 
 env:
-  REGISTRY: ${{ vars.REGISTRY }}
-  TEST_TAG: ${{ vars.REGISTRY }}/infoscreen:test
   IMAGE_NAME: infoscreen
   LATEST_TAG: latest
 
