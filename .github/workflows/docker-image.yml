@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Robot logs
-          path: /home/runner/work/Infoscreen-testing/infoscreen/tests/logs/Infoscreen_logs/
+          path: /home/runner/work/Infoscreen-testing/Infoscreen-testing/tests/logs/Infoscreen_logs/
       
       - name: Store test screenshots
         if: success() || failure()
