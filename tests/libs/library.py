@@ -88,8 +88,8 @@ browser2 = 'headlessfirefox'
 browser3 = 'chrome'
 
 # credentials
-valid_user = os.environ.get('DJANGO_SUPERUSER_NAME')
-valid_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+valid_user = os.environ.get('DJANGO_SUPERUSER_NAME', 'Supertest')
+valid_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'keksitty-salasana')
 
 # datetime-objects
 today = datetime.date.today()
