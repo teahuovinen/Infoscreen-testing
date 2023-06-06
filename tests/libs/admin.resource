@@ -4,7 +4,6 @@ Library         RPA.Images
 Library         library.py
 Resource        infoscreen.resource
 Variables       library.py
-Variables       secrets.py
 
 
 *** Keywords ***
@@ -86,6 +85,7 @@ Assert added picture from Oulu screen
     Wait Until Element Is Visible                id=clock
     Element Should Be Visible                    id=releaseimage
     ${screen}=     Capture Element Screenshot    id=releaseimage
+#    Find Template In Image    ${screen}    ${CURDIR}${/}${picture}.png
     Compare Images    ${screen}    ${CURDIR}${/}${picture}.png    threshold= 0.22    resize_candidate= True
 
 Assert added release from all screens

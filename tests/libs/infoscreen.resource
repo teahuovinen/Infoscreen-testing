@@ -38,15 +38,17 @@ Infoscreen should give weather forecast
     Element should not contain       id=weatherbox_now    ???
 
 Logos should be visible and correct
-    [Documentation]    Tests that logo and Yle logo are visible on infoscreen of given office. 
+    [Documentation]    Tests that Company logo and Yle logo are visible on infoscreen of given office. 
     ...                Argument city must be Helsinki, Oulu, Tampere or Kuopio.
     [Arguments]    ${city}
     Open infoscreen                              ${city}
     Element Should Be Visible                    id=companylogoimage
     ${logo}=     Capture Element Screenshot      id=companylogoimage    
     ${yle}=        Capture Element Screenshot    id=ylelogoimage
-    Compare Images    ${logo}    ${CURDIR}${/}company_logo.png  threshold= 0.22    resize_candidate= True
-    Compare Images    ${yle}     ${CURDIR}${/}yle_logo.png      threshold= 0.22    resize_candidate= True
+    Find Template In Image    ${logo}    ${CURDIR}${/}company_logo.png
+    Find Template In Image    ${yle}     ${CURDIR}${/}yle_logo.png        
+#    Compare Images    ${logo}    ${CURDIR}${/}company_logo.png  threshold= 0.22    resize_candidate= True
+#    Compare Images    ${yle}     ${CURDIR}${/}yle_logo.png      threshold= 0.22    resize_candidate= True
 
 News should be visible
     [Documentation]     Tests that news are visible on infoscreen.

@@ -15,6 +15,7 @@ Infoscreen should be on
     Run Keyword And Continue On Failure    Heading should be city name                Tampere
 
 Logos should be visible and correct
+    [Tags]    Logo
     Run Keyword And Continue On Failure    Logos should be visible and correct        Oulu
     Run Keyword And Continue On Failure    Logos should be visible and correct        Helsinki
     Run Keyword And Continue On Failure    Logos should be visible and correct        Kuopio

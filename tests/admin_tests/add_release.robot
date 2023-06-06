@@ -96,6 +96,7 @@ Add release with big picture
     [Teardown]    Run keywords    Delete release    ${heading}  AND  Close browser
 
 Add release with picture to Oulu and delete
+    [Tags]    Picture
     ${number}=    Generate random string    4    0123456789
     Set Test Variable                       ${heading}     Test heading ${number}
     Delete all releases
