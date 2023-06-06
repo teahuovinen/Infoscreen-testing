@@ -45,10 +45,10 @@ Logos should be visible and correct
     Element Should Be Visible                    id=companylogoimage
     ${logo}=     Capture Element Screenshot      id=companylogoimage    
     ${yle}=        Capture Element Screenshot    id=ylelogoimage
-#    Find Template In Image    ${logo}    ${CURDIR}${/}company_logo.png
-#    Find Template In Image    ${yle}     ${CURDIR}${/}yle_logo.png        tolerance=${0.1}
-    Compare Images    ${logo}    ${CURDIR}${/}company_logo.png  threshold= 0.22    resize_candidate= True
-    Compare Images    ${yle}     ${CURDIR}${/}yle_logo.png      threshold= 0.22    resize_candidate= True    
+    Find Template In Image    ${logo}    ${CURDIR}${/}company_logo.png
+    Find Template In Image    ${yle}     ${CURDIR}${/}yle_logo.png  
+#    Compare Images    ${logo}    ${CURDIR}${/}company_logo.png  threshold= 0.22    resize_candidate= True
+#    Compare Images    ${yle}     ${CURDIR}${/}yle_logo.png      threshold= 0.22    resize_candidate= True    
 
 News should be visible
     [Documentation]     Tests that news are visible on infoscreen.
